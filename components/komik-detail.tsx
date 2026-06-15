@@ -54,7 +54,7 @@ export function ComikDetail(props: Props) {
 
   const { data: chapters, isLoading: chaptersLoading } = useSWR(
     seriesId ? ["chapters", seriesId] : null,
-    () => getChaptersByCategory(seriesId, 100),
+    () => getChaptersByCategory(seriesId),
     { revalidateOnFocus: false },
   )
 
