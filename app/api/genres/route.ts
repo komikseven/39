@@ -13,12 +13,7 @@ interface Genre {
   count: number
 }
 
-/**
- * Scrape genre dari halaman /genres/ komik7.my.id
- * Genre ada di sana sebagai list link: /genres/[slug]/
- * Ini JAUH lebih akurat daripada /wp/v2/tags yang isinya judul komik
- */
-async function scrapeGenres(): Promise<Genre[]> {
+async function fetchGenres(): Promise<Genre[]> {
   const res = await fetch(`${SITE_BASE}/genres/`, {
     headers: { "User-Agent": "Mozilla/5.0" },
     next: { revalidate: 3600 },
@@ -26,28 +21,29 @@ async function scrapeGenres(): Promise<Genre[]> {
   if (!res.ok) return []
   const html = await res.text()
 
-  // Pola: <a href="/genres/action/">Action <em>259</em></a>
-  // atau:  Action *259*  (dari markdown parser)
-  const matches = [
-    ...html.matchAll(/href="https?:\/\/komik7\.my\.id\/genres\/([^/]+)\/"[^>]*>\s*([^<(]+?)(?:\s*<em[^>]*>(\d+)<\/em>|)\s*</gi),
-  ]
+  // Pakai pola SAMA dengan scrape-detail yang sudah terbukti benar
+  const matches = [...html.matchAll(/\/genres\/([^/]+)\/[^>]*>([^<]+)</gi)]
 
   const genres: Genre[] = []
+  const seen = new Set<string>()
   let id = 1
+
   for (const m of matches) {
     const slug = m[1].trim()
     const name = m[2].trim()
-    const count = m[3] ? parseInt(m[3]) : 0
-    if (!slug || !name || slug === "genres") continue
-    // Skip genre noise dengan count sangat kecil (opsional)
-    genres.push({ id: id++, name, slug, count })
+    if (!slug || !name) continue
+    if (seen.has(slug)) continue
+    if (["genres", "genre"].includes(slug)) continue
+    seen.add(slug)
+    genres.push({ id: id++, name, slug, count: 0 })
   }
+
   return genres
 }
 
 export async function GET() {
   try {
-    const genres = await cached("komiku:genres:v2", TTL.genres, scrapeGenres)
+    const genres = await cached("komiku:genres:v5", TTL.genres, fetchGenres)
     return NextResponse.json(genres)
   } catch {
     return NextResponse.json([], { status: 200 })
