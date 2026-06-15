@@ -1,0 +1,227 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:transparent}
+.wrap{padding:1rem 0;display:flex;flex-direction:column;gap:2rem}
+.page-block{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.page-header{background:var(--color-background-secondary);padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.page-label{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.page-url{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono)}
+.badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;margin-left:auto}
+.badge-ok{background:#EAF3DE;color:#3B6D11}
+.badge-warn{background:#FAEEDA;color:#854F0B}
+.body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.zone{border-radius:8px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary)}
+.zone-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.zone-label i{font-size:14px}
+.zone-desc{font-size:12px;color:var(--color-text-primary);line-height:1.5}
+.issue{border-left:2px solid #E24B4A;background:#FCEBEB;padding:8px 10px;border-radius:0 6px 6px 0;margin-top:4px}
+.issue p{font-size:11px;color:#A32D2D;line-height:1.4}
+.fix{border-left:2px solid #1D9E75;background:#E1F5EE;padding:8px 10px;border-radius:0 6px 6px 0;margin-top:4px}
+.fix p{font-size:11px;color:#0F6E56;line-height:1.4}
+.info{border-left:2px solid #378ADD;background:#E6F1FB;padding:8px 10px;border-radius:0 6px 6px 0;margin-top:4px}
+.info p{font-size:11px;color:#185FA5;line-height:1.4}
+.row{display:flex;gap:8px;align-items:flex-start}
+.col{flex:1;display:flex;flex-direction:column;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:99px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-secondary)}
+.chip i{font-size:12px}
+.zone.muted{background:var(--color-background-secondary)}
+.section-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.04em;text-transform:uppercase;padding:0 0 6px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px}
+</style>
+
+<div class="wrap">
+
+<div class="section-title">Tata halaman saat ini — audit & saran</div>
+
+<!-- HOME -->
+<div class="page-block">
+  <div class="page-header">
+    <i class="ti ti-home" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary)"></i>
+    <span class="page-label">Home</span>
+    <span class="page-url">app/page.tsx</span>
+    <span class="badge badge-ok">Baik</span>
+  </div>
+  <div class="body">
+    <div class="row">
+      <div class="col">
+        <div class="zone muted">
+          <div class="zone-label"><i class="ti ti-layout-navbar" aria-hidden="true"></i> SiteHeader</div>
+          <div class="zone-desc">Desktop nav + search + logo</div>
+        </div>
+        <div class="zone" style="background:#EAF3DE">
+          <div class="zone-label"><i class="ti ti-bolt" aria-hidden="true"></i> LatestChapters</div>
+          <div class="zone-desc">Grid chapter terbaru — sudah ada pagination prop tapi <strong>belum dipakai</strong> di home</div>
+          <div class="info"><p><i class="ti ti-bulb" aria-hidden="true"></i> Tambah <code>paginated={false}</code> eksplisit agar jelas. Sudah oke, hanya dokumentasi.</p></div>
+        </div>
+        <div class="zone" style="background:#EAF3DE">
+          <div class="zone-label"><i class="ti ti-grid-dots" aria-hidden="true"></i> HomeFeed</div>
+          <div class="zone-desc">Grid semua komik — pagination 24/page sudah ada</div>
+        </div>
+        <div class="zone muted">
+          <div class="zone-label"><i class="ti ti-layout-bottombar" aria-hidden="true"></i> SiteFooter</div>
+          <div class="zone-desc">Copyright + nama site</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-device-mobile" aria-hidden="true"></i> BottomNav (mobile)</div>
+          <div class="zone-desc">Fixed bottom — 4 item menu</div>
+          <div class="fix"><p>✅ <code>pb-16 md:pb-0</code> di layout.tsx sudah handle agar konten tidak tertutup</p></div>
+        </div>
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Yang perlu diperhatikan</div>
+          <div class="issue"><p>❌ <code>max-w-7xl</code> di main, tapi <code>LatestChapters</code> grid 3-col — di layar lebar terasa lebar sekali. Pertimbangkan <code>max-w-5xl</code> untuk section chapter.</p></div>
+          <div class="issue"><p>❌ <code>gap-10</code> antara LatestChapters dan HomeFeed terlalu besar di mobile — bisa jadi <code>gap-8 md:gap-10</code></p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPLORE -->
+<div class="page-block">
+  <div class="page-header">
+    <i class="ti ti-compass" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary)"></i>
+    <span class="page-label">Explore / Genre</span>
+    <span class="page-url">app/genre/page.tsx</span>
+    <span class="badge badge-ok">Baik</span>
+  </div>
+  <div class="body">
+    <div class="row">
+      <div class="col">
+        <div class="zone muted">
+          <div class="zone-label">SiteHeader</div>
+        </div>
+        <div class="zone" style="background:#E6F1FB">
+          <div class="zone-label"><i class="ti ti-flag" aria-hidden="true"></i> Jenis Komik — 3 card (🇯🇵🇰🇷🇨🇳)</div>
+          <div class="zone-desc"><code>grid grid-cols-3</code> → link ke <code>/genre/[slug]</code></div>
+          <div class="fix"><p>✅ Layout sudah benar. Emoji bendera tampil di semua device.</p></div>
+        </div>
+        <div class="zone" style="background:#E6F1FB">
+          <div class="zone-label"><i class="ti ti-tag" aria-hidden="true"></i> Genre badges — flex-wrap</div>
+          <div class="zone-desc">Data dari <code>/api/genres</code> → Upstash → WordPress. Warna cycling 8 warna.</div>
+        </div>
+        <div class="zone muted">
+          <div class="zone-label">SiteFooter + BottomNav (mobile)</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Yang perlu diperbaiki</div>
+          <div class="issue"><p>❌ <code>max-w-5xl</code> di genre tapi home pakai <code>max-w-7xl</code> — lebar halaman beda-beda. Seragamkan ke satu nilai, misalnya <code>max-w-6xl</code> untuk semua.</p></div>
+          <div class="issue"><p>❌ Skeleton genre badge pakai <code>style</code> inline untuk lebar — lebih baik pakai class Tailwind <code>w-20</code>, <code>w-28</code>, dll agar konsisten.</p></div>
+          <div class="info"><p>💡 Pertimbangkan tambah search/filter di atas daftar genre bila jumlah genre banyak (&gt;30).</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAVORIT -->
+<div class="page-block">
+  <div class="page-header">
+    <i class="ti ti-heart" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary)"></i>
+    <span class="page-label">Favorit</span>
+    <span class="page-url">app/favorit/page.tsx</span>
+    <span class="badge badge-warn">Ada catatan</span>
+  </div>
+  <div class="body">
+    <div class="row">
+      <div class="col">
+        <div class="zone muted">
+          <div class="zone-label">SiteHeader</div>
+        </div>
+        <div class="zone" style="background:#FAEEDA">
+          <div class="zone-label"><i class="ti ti-cards" aria-hidden="true"></i> Grid FavCard — 3→4→5→6 col</div>
+          <div class="zone-desc">Thumbnail <code>aspect-[2/3]</code>, badge chapter count di kiri bawah, tombol hapus kanan atas (hover)</div>
+          <div class="issue"><p>❌ Tombol hapus <code>opacity-0 group-hover:opacity-100</code> → tidak accessible di mobile (tidak ada hover). Tambah <code>long-press</code> atau tombol permanent di mobile.</p></div>
+          <div class="fix"><p>✅ Fallback ke <code>/manga-placeholder.png</code> kalau tidak ada thumbnail — pastikan file ini ada di <code>public/</code></p></div>
+        </div>
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-mood-empty" aria-hidden="true"></i> Empty state</div>
+          <div class="zone-desc">Icon + teks + tombol "Jelajahi Komik" — sudah lengkap</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Masalah utama</div>
+          <div class="issue"><p>❌ <code>proxyImage(item.thumbnail)</code> dipanggil di setiap card render — pastikan fungsi ini stabil (tidak re-fetch tiap render).</p></div>
+          <div class="issue"><p>❌ <code>item.count</code> di badge chapter — field ini ada di <code>FavoriteItem</code>? Cek tipe di <code>lib/storage.ts</code>.</p></div>
+          <div class="info"><p>💡 Tambahkan sort: terbaru ditambahkan / A-Z. Berguna kalau favorit sudah banyak.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page-block">
+  <div class="page-header">
+    <i class="ti ti-clock" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary)"></i>
+    <span class="page-label">History</span>
+    <span class="page-url">app/history/page.tsx</span>
+    <span class="badge badge-warn">Ada catatan</span>
+  </div>
+  <div class="body">
+    <div class="row">
+      <div class="col">
+        <div class="zone muted">
+          <div class="zone-label">SiteHeader</div>
+        </div>
+        <div class="zone" style="background:#FAEEDA">
+          <div class="zone-label"><i class="ti ti-list" aria-hidden="true"></i> Daftar HistoryCard — list vertikal</div>
+          <div class="zone-desc">Thumbnail kecil + judul + chapter + waktu + tombol "Lanjutkan" — tata letak horizontal sudah bagus</div>
+          <div class="issue"><p>❌ <code>timeAgo(new Date(item.readAt).toISOString())</code> — <code>readAt</code> sudah ISO string? Kalau ya, <code>new Date().toISOString()</code> redundant. Cek tipe di storage.</p></div>
+          <div class="fix"><p>✅ Tombol "Hapus Semua" sudah ada dengan konfirmasi visual (warna merah)</p></div>
+        </div>
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-mood-empty" aria-hidden="true"></i> Empty state</div>
+          <div class="zone-desc">Icon + teks + tombol "Mulai Membaca"</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="zone">
+          <div class="zone-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Masalah utama</div>
+          <div class="issue"><p>❌ <code>max-w-2xl</code> di history — terlalu sempit di desktop. Pakai <code>max-w-3xl</code> atau <code>max-w-4xl</code>.</p></div>
+          <div class="issue"><p>❌ Tombol X hapus single item <code>opacity-0 group-hover:opacity-100</code> — sama seperti favorit, tidak terlihat di HP. Buat selalu visible di mobile.</p></div>
+          <div class="info"><p>💡 Grouping per hari ("Hari ini", "Kemarin", "3 hari lalu") akan membuat history lebih mudah dibaca.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SINKRONISASI -->
+<div class="page-block">
+  <div class="page-header">
+    <i class="ti ti-layout-bottombar" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary)"></i>
+    <span class="page-label">Sinkronisasi BottomNav ↔ Desktop nav</span>
+    <span class="page-url">components/bottom-nav.tsx + site-header.tsx</span>
+    <span class="badge badge-ok">Sudah sinkron</span>
+  </div>
+  <div class="body">
+    <div class="row">
+      <div class="col">
+        <div class="zone" style="background:#EAF3DE">
+          <div class="zone-label"><i class="ti ti-device-mobile" aria-hidden="true"></i> BottomNav (mobile)</div>
+          <div class="zone-desc">
+            <span class="chip"><i class="ti ti-home" aria-hidden="true"></i> / Home</span>&nbsp;
+            <span class="chip"><i class="ti ti-compass" aria-hidden="true"></i> /genre Explore</span>&nbsp;
+            <span class="chip"><i class="ti ti-heart" aria-hidden="true"></i> /favorit Favorit</span>&nbsp;
+            <span class="chip"><i class="ti ti-clock" aria-hidden="true"></i> /history History</span>
+          </div>
+          <div class="fix"><p>✅ Badge merah di icon ❤️ menampilkan jumlah favorit. Active state pakai dot + label muncul.</p></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="zone" style="background:#EAF3DE">
+          <div class="zone-label"><i class="ti ti-monitor" aria-hidden="true"></i> Desktop nav (SiteHeader)</div>
+          <div class="zone-desc">Beranda / Komik / Genre — link /genre sudah ditambahkan</div>
+          <div class="info"><p>💡 Desktop nav belum punya link ke /favorit dan /history. Tambahkan di FALLBACK_NAV di site-header.tsx atau lewat icon di sudut kanan.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
