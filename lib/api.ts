@@ -418,6 +418,15 @@ export async function getSeriesByType(type: string, page = 1, perPage = 24) {
 }
 
 // ─── Chapter functions ────────────────────────────────────────────────────────
+
+export async function getLatestChapters(page = 1, perPage = 24) {
+  const url = `${API_BASE}/posts?per_page=${perPage}&page=${page}&orderby=date&order=desc&_fields=${POST_FIELDS}`
+  const { data, res } = await fetchJson(url)
+  const totalPages = Number.parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10) || 1
+  const chapters = (data as RawPost[]).map(parseChapter)
+  return { chapters, totalPages }
+}
+
 export async function getChaptersByCategory(categoryId: number, perPage = 100): Promise<Chapter[]> {
   // Fetch page 1 dulu untuk tahu total halaman
   const firstUrl = `${API_BASE}/posts?categories=${categoryId}&per_page=${perPage}&page=1&orderby=date&order=desc&_fields=${POST_FIELDS}`
@@ -426,6 +435,7 @@ export async function getChaptersByCategory(categoryId: number, perPage = 100): 
 
   const firstChapters = (firstData as RawPost[]).map(parseChapter)
 
+  // Kalau cuma 1 halaman, langsung return
   if (totalPages <= 1) return firstChapters
 
   // Fetch sisa halaman secara paralel
@@ -439,4 +449,131 @@ export async function getChaptersByCategory(categoryId: number, perPage = 100): 
   )
 
   return [firstChapters, ...restResults].flat()
+}
+
+export async function getChapter(id: number): Promise<Chapter> {
+  const url = `${API_BASE}/posts/${id}?_fields=${POST_FIELDS}`
+  const data = await fetcher(url)
+  return parseChapter(data as RawPost)
+}
+
+export async function searchChapters(query: string, perPage = 24): Promise<Chapter[]> {
+  const url = `${API_BASE}/posts?search=${encodeURIComponent(query)}&per_page=${perPage}&_fields=${POST_FIELDS}`
+  const data = await fetcher(url)
+  return (data as RawPost[]).map(parseChapter)
+}
+
+export async function searchSeries(query: string, perPage = 24): Promise<Series[]> {
+  const url = `${API_BASE}/categories?search=${encodeURIComponent(query)}&per_page=${perPage}&exclude=1`
+  const data = await fetcher(url)
+  return (data as RawCategory[]).map(parseSeries)
+}
+
+// ─── Thumbnail helpers ────────────────────────────────────────────────────────
+
+export async function getSeriesThumbnail(categoryId: number): Promise<string> {
+  try {
+    const url = `${API_BASE}/posts?categories=${categoryId}&per_page=1&orderby=date&order=desc&_fields=content`
+    const res = await fetch(url, { headers: { Accept: "application/json" } })
+    if (!res.ok) return "/manga-placeholder.png"
+    const posts = (await res.json()) as RawPost[]
+    if (!posts.length) return "/manga-placeholder.png"
+    return getThumbnail(posts[0].content?.rendered ?? "")
+  } catch {
+    return "/manga-placeholder.png"
+  }
+}
+
+// ─── Genre functions ──────────────────────────────────────────────────────────
+
+export async function getGenres(): Promise<Genre[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/tags?per_page=100&orderby=count&order=desc&hide_empty=true`,
+      { next: { revalidate: 3600 } }
+    )
+    if (!res.ok) return []
+    const tags = await res.json() as Array<{ id: number; name: string; slug: string; count: number }>
+    return tags.map(t => ({ id: t.id, name: decodeHtml(t.name), slug: t.slug, count: t.count }))
+  } catch {
+    return []
+  }
+}
+
+export async function getSeriesGenres(categoryId: number): Promise<Genre[]> {
+  try {
+    const postsUrl = `${API_BASE}/posts?categories=${categoryId}&per_page=1&orderby=date&order=desc&_fields=id,tags`
+    const postsRes = await fetch(postsUrl, { headers: { Accept: "application/json" }, next: { revalidate: 3600 } })
+    if (!postsRes.ok) return []
+    const posts = await postsRes.json() as Array<{ id: number; tags?: number[] }>
+    if (!posts.length || !posts[0].tags?.length) return []
+    const tagIds = posts[0].tags!.slice(0, 10).join(",")
+    const tagsUrl = `${API_BASE}/tags?include=${tagIds}&per_page=10`
+    const tagsRes = await fetch(tagsUrl, { headers: { Accept: "application/json" }, next: { revalidate: 3600 } })
+    if (!tagsRes.ok) return []
+    const tags = await tagsRes.json() as Array<{ id: number; name: string; slug: string; count: number }>
+    return tags.map(t => ({ id: t.id, name: decodeHtml(t.name), slug: t.slug, count: t.count }))
+  } catch {
+    return []
+  }
+}
+
+// ─── Menu ─────────────────────────────────────────────────────────────────────
+
+export async function getMenuItems(): Promise<MenuItem[]> {
+  try {
+    const menusRes = await fetch(`${API_BASE}/menus`, { headers: { Accept: "application/json" } })
+    if (!menusRes.ok) return []
+    const menus = (await menusRes.json()) as Array<{ id: number }>
+    if (!Array.isArray(menus) || !menus.length) return []
+    const menuId = menus[0].id
+    const itemsRes = await fetch(`${API_BASE}/menu-items?menus=${menuId}`, { headers: { Accept: "application/json" } })
+    if (!itemsRes.ok) return []
+    const items = (await itemsRes.json()) as Array<{ id: number; title?: { rendered?: string }; url?: string }>
+    return items.map(it => ({
+      id: it.id,
+      title: decodeHtml(it.title?.rendered ?? ""),
+      url: it.url ?? "#",
+    }))
+  } catch {
+    return []
+  }
+}
+
+// ─── Date utils ───────────────────────────────────────────────────────────────
+
+export function timeAgo(dateStr: string): string {
+  if (!dateStr) return ""
+  const date = new Date(dateStr)
+  const now = new Date()
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  if (Number.isNaN(seconds)) return ""
+  if (seconds < 60) return "baru saja"
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} menit lalu`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} jam lalu`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days} hari lalu`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months} bulan lalu`
+  return `${Math.floor(months / 12)} tahun lalu`
+}
+
+export function formatDate(dateStr: string): string {
+  if (!dateStr) return ""
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+}
+
+// ─── Legacy compat ────────────────────────────────────────────────────────────
+// Fungsi lama yang masih dipakai komponen lain
+
+export function parseCover(description: string): string {
+  const desc = (description || "").trim()
+  if (!desc) return "/manga-placeholder.png"
+  if (desc.startsWith("http")) return desc.split(/\s+/)[0]
+  const imgs = extractImages(desc)
+  return imgs.length > 0 ? imgs[0] : "/manga-placeholder.png"
 }
